@@ -1,0 +1,37 @@
+.idea
+
+###> symfony/framework-bundle ###
+/user/.env
+/user/.env.local
+/user/.env.local.php
+/user/.env.*.local
+/user/config/secrets/prod/prod.decrypt.private.php
+/user/public/bundles/
+/user/var/
+/user/vendor/
+
+/notification/.env
+/notification/.env.local
+/notification/.env.local.php
+/notification/.env.*.local
+/notification/config/secrets/prod/prod.decrypt.private.php
+/notification/public/bundles/
+/notification/var/
+/notification/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/user/phpunit.xml
+/user/.phpunit.result.cache
+
+/notification/phpunit.xml
+/notification/.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/asset-mapper ###
+/user/public/assets/
+/user/assets/vendor/
+
+/notification/public/assets/
+/notification/assets/vendor/
+###< symfony/asset-mapper ###

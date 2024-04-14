@@ -1,0 +1,95 @@
+version: "3.8"
+services:
+    db:
+        image: mysql
+        container_name: mydb
+        restart: always
+        volumes:
+            - db-data:/var/lib/mysql
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        networks:
+            - microservice
+
+    phpmyadmin:
+        image: phpmyadmin
+        container_name: phpmyadmin
+        restart: always
+        depends_on:
+            - db
+        ports:
+            - 8080:80
+        environment:
+            PMA_HOST: db
+        networks:
+            - microservice
+
+    user_service:
+        build: docker/user
+        container_name: user_service
+        ports:
+          - "81:80"
+        volumes:
+            - ./docker/user/vhosts:/etc/apache2/sites-enabled
+            - ./docker/user/user-entrypoint.sh:/usr/local/bin/user-entrypoint.sh
+            - ./:/var/www
+        restart: always
+        networks:
+            - microservice
+        depends_on:
+            - rabbitmq
+        environment:
+            APP_ENV: dev
+            APP_SECRET: d45b4cf21e9745be3169267d7577f5df
+            DATABASE_URL: mysql://root@db:3306/microservice
+            MESSENGER_TRANSPORT_DSN: amqp://guest:guest@rabbitmq:5672/%2f
+
+    notification_service:
+        build: docker/notification
+        container_name: notification_service
+        ports:
+          - "82:80"
+        volumes:
+            - ./docker/notification/vhosts:/etc/apache2/sites-enabled
+            - ./docker/notification/notification-entrypoint.sh:/usr/local/bin/notification-entrypoint.sh
+            - ./:/var/www
+        restart: always
+        networks:
+            - microservice
+        depends_on:
+            - rabbitmq
+        environment:
+            DB_HOST: db
+            DB_DATABASE: microservice
+            DB_USERNAME: root
+            DB_PASSWORD:
+            APP_ENV: dev
+            APP_SECRET: 87ab75d5d8ae1e9e3fc18529a67ec8c9
+            DATABASE_URL: mysql://root@db:3306/microservice
+            MESSENGER_TRANSPORT_DSN: amqp://guest:guest@rabbitmq:5672/%2f
+            
+    rabbitmq:
+        image: rabbitmq:management
+        container_name: rabbitmq
+        restart: always
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        networks:
+            - microservice
+            
+    composer:
+        image: composer
+        container_name: composer
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        networks:
+            - microservice
+            
+networks:
+    microservice:
+        driver: bridge
+
+volumes:
+    db-data:
